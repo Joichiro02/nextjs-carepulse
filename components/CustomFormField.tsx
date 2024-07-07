@@ -2,7 +2,6 @@
 
 import {
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -14,6 +13,11 @@ import { FormFieldType } from "./forms/PatientForm";
 import Image from "next/image";
 import 'react-phone-number-input/style.css';
 import PhoneInput, { type Value } from 'react-phone-number-input';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { Select, SelectContent, SelectTrigger, SelectValue } from "./ui/select";
+import { Textarea } from "./ui/textarea";
+import { Checkbox } from "./ui/checkbox";
 
 
 interface CustomProps {
@@ -26,13 +30,13 @@ interface CustomProps {
     iconAlt?: string;
     disabled?: boolean;
     dateFormat?: string;
-    showTimeSelect?: string;
+    showTimeSelect?: boolean;
     children?: React.ReactNode;
     renderSkeleton?: (field: any) => React.ReactNode
 }
 
 const RenderField = ({field, props}: {field: any, props: CustomProps}) => {
-    const {fieldType, iconSrc, iconAlt, placeholder} = props;
+    const {control, fieldType, name, label, iconSrc, iconAlt, placeholder, showTimeSelect, disabled, dateFormat, children, renderSkeleton} = props;
 
     switch(fieldType){
         case FormFieldType.INPUT:
@@ -56,6 +60,17 @@ const RenderField = ({field, props}: {field: any, props: CustomProps}) => {
                     </FormControl>
                 </div>
             );
+        case FormFieldType.TEXTAREA:
+            return(
+                <FormControl>
+                    <Textarea
+                        placeholder={placeholder}
+                        {...field}
+                        className="shad-textArea"
+                        disabled={disabled}
+                    />
+                </FormControl>
+            );
         case FormFieldType.PHONE_INPUT:
             return(
                 <FormControl>
@@ -70,6 +85,61 @@ const RenderField = ({field, props}: {field: any, props: CustomProps}) => {
                     />
                 </FormControl>
             );
+        case FormFieldType.DATA_PICKER:
+            return(
+                <div className="flex rounded-md border border-dark-500 bg-dark-400">
+                    <Image
+                        src='/assets/icons/calendar.svg'
+                        height={24}
+                        width={24}
+                        alt='calendar'
+                        className='ml-2'
+                    />
+                    <FormControl>
+                        <DatePicker
+                            selected={field.value}
+                            onChange={(date) => field.onChange(date)}
+                            dateFormat={dateFormat ?? 'MM/dd/yyyy'}
+                            showTimeSelect={showTimeSelect ?? false}
+                            timeInputLabel='Time:'
+                            wrapperClassName='date-picker'
+                        />
+                    </FormControl>
+                </div>
+            );
+        case FormFieldType.SELECT:
+            return(
+                <FormControl>
+                    <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                    >
+                        <FormControl>
+                            <SelectTrigger className="shad-select-trigger">
+                                <SelectValue placeholder={placeholder}/>
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent className="shad-select-content">
+                            {children}
+                        </SelectContent>
+                    </Select>
+                </FormControl>
+            );
+        case FormFieldType.SKELETON:
+            return renderSkeleton ? renderSkeleton(field) : null;
+        case FormFieldType.CHECKBOX:
+            return(
+                <FormControl>
+                    <div className="flex items-center gap-4">
+                        <Checkbox
+                            id={name}
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                        />
+                        <label htmlFor={name} className="checkbox-label">{label}</label>
+                    </div>
+                </FormControl>
+            )
         default:
             break;
     }
