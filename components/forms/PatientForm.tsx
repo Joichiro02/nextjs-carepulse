@@ -9,6 +9,8 @@ import CustomFormField from "../CustomFormField";
 import SubmitButton from "../SubmitButton";
 import { useState } from "react";
 import { UserFormValidation } from "@/lib/validation";
+import { createUser } from "@/lib/actions/patient.actions";
+import { useRouter } from "next/navigation";
 
 export enum FormFieldType {
     INPUT = 'input',
@@ -22,6 +24,7 @@ export enum FormFieldType {
 }
 
 export default function PatientForm() {
+    const router = useRouter();
     const [isLoading, setIsLoading] = useState(false);
     // 1. Define your form.
     const form = useForm<z.infer<typeof UserFormValidation>>({
@@ -38,9 +41,14 @@ export default function PatientForm() {
         setIsLoading(true);
         try {
             const userData = {name, email, phone};
+            const user = await createUser(userData);
+            
+            if(user) router.push(`/patients/${user.$id}/register`)
         } catch (error) {
             console.log(error);
         }
+        setIsLoading(false);
+        
     }
 
     return (
